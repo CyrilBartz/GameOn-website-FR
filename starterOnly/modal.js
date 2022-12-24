@@ -18,19 +18,28 @@ const email = document.querySelector('#email')
 const birthdate = document.querySelector('#birthdate')
 const quantity = document.querySelector('#quantity')
 const checkbox = document.querySelectorAll('.checkbox-input')
-const form = document.querySelector('form')
-
+const closeThanks = document.getElementById('fermer')
+const thanks = document.querySelector('.thanks')
+const form = document.querySelector('.modal-body')
 // launch modal event
 modalBtn.forEach((btn) => btn.addEventListener("click", launchModal));
 
 // launch modal form
 function launchModal() {
-    modalbg.style.display = "block";
+    modalbg.style.display = "block"
+    thanks.style.display = "none"
 }
 
 //close the modal
+
 close.addEventListener('click', function () {
-    modalbg.style.display = "none";
+    modalbg.style.display = "none"
+    form.style.display = "block"
+})
+
+closeThanks.addEventListener('click', function () {
+    modalbg.style.display = "none"
+    form.style.display = "block"
 })
 
 function addErrorDataSet(index, message) {
@@ -80,10 +89,12 @@ if (data != null) {
     }
 }
 
-
 function isValidPrenom() {
-    if (prenom.value === null || prenom.value.length < 2) {
-        addErrorDataSet(0, "Vous avez oublié de saisir le prénom ou le prénom ne posséde pas assez de caractères")
+    if (prenom.value.trim() === "") {
+        addErrorDataSet(0, "Vous avez oublié de saisir le prénom")
+        return false
+    } else if (prenom.value.trim().length < 2) {
+        addErrorDataSet(0, "Le prénom ne posséde pas assez de caractères")
         return false
     } else {
         removeErrorDataSet(0)
@@ -92,8 +103,11 @@ function isValidPrenom() {
 }
 
 function isValidNom() {
-    if (nom.value === null || nom.value.length < 2) {
-        addErrorDataSet(1, "Vous avez oublié de saisir le nom ou le nom ne posséde pas assez de caractères")
+    if (nom.value.trim() === "") {
+        addErrorDataSet(1, "Vous avez oublié de saisir le nom")
+        return false
+    } else if (nom.value.trim().length < 2) {
+        addErrorDataSet(1, "Le nom ou le nom ne posséde pas assez de caractères")
         return false
     } else {
         removeErrorDataSet(1)
@@ -103,8 +117,11 @@ function isValidNom() {
 
 function isValidEmail() {
     const regex = /[a-z0-9-_.]+@[a-z0-9-_.]+\.[a-z]{2,}/
-    if (email.value === null || !regex.test(email.value)) {
-        addErrorDataSet(2, "Vous avez oublié de saisir l'email ou le format de l'email est incorrect")
+    if (email.value === null) {
+        addErrorDataSet(2, "Vous avez oublié de saisir l'email")
+        return false
+    } else if (!regex.test(email.value)) {
+        addErrorDataSet(2, "Le format de l'email est incorrect")
         return false
     } else {
         removeErrorDataSet(2)
@@ -113,10 +130,12 @@ function isValidEmail() {
 }
 
 function isValidBirthdate() {
-    if (birthdate.value !== null) {
+    if (birthdate.value.trim() !== "") {
         const transformBirthdate = birthdate.value.split("-")
         const year = parseInt(transformBirthdate[0])
-        if (year <= 1900 || year >= 2023) {
+        const date = new Date()
+        const currentYear = date.getFullYear()
+        if (year <= 1900 || year >= (currentYear - 18)) {
             addErrorDataSet(3, "L'année est incorrect")
             return false
         } else {
@@ -130,8 +149,11 @@ function isValidBirthdate() {
 
 function isValidQuantity() {
     const regex = /^\d+$/
-    if (quantity.value === null || !regex.test(quantity.value)) {
-        addErrorDataSet(4, "Vous avez oublié de saisir la quantité de participation ou vous n'avez pas écrit de nombre")
+    if (quantity.value.trim() === "") {
+        addErrorDataSet(4, "Vous avez oublié de saisir la quantité de participation")
+        return false
+    } else if (!regex.test(quantity.value)) {
+        addErrorDataSet(4, "Vous n'avez pas écrit de nombre")
         return false
     }
     removeErrorDataSet(4)
@@ -140,47 +162,32 @@ function isValidQuantity() {
 
 function isValidCheckBox() {
     for (let i = 0; i < checkbox.length - 2; i++) {
-        if (checkbox[i].checked)
+        if (checkbox[i].checked) {
+            removeErrorDataSet(5)
             return true
+        }
     }
+    addErrorDataSet(5, "Vous avez oublié de saisir une ville")
     return false
 }
 
 function isValidConditionsOfUse() {
-    if (checkbox[checkbox.length - 2].checked)
+    if (checkbox[checkbox.length - 2].checked) {
+        removeErrorDataSet(6)
         return true
+    }
+    addErrorDataSet(6, "Vous avez oublié d'accepter les conditions d'utilisations")
     return false
 }
 
 function validate() {
     saveFormData()
-    if (isValidPrenom() &&
-        isValidNom() &&
-        isValidEmail() &&
-        isValidBirthdate() &&
-        isValidQuantity() &&
-        isValidCheckBox() &&
-        isValidConditionsOfUse()
+    const isValid = [isValidPrenom(), isValidNom(), isValidEmail(), isValidBirthdate(), isValidQuantity(), isValidCheckBox(), isValidConditionsOfUse()].every(Boolean);
+    if (isValid
     ) {
         localStorage.removeItem("data")
-        for (let i = 0; i < formData.length; i++) {
-            formData[i].style.display = "none"
-        }
-        document.querySelector('.btn-submit').style.display = "none"
-        document.querySelector('.text-label').style.display = "none"
-        // Affiche le message lorsque la réponse est reçue
-        const input = document.createElement('input')
-        input.value = "Fermer"
-        input.classList.add('button')
-        input.type = "button"
-        input.classList.add('btn-submit')
-        const paragraph = document.createElement('p')
-        paragraph.innerText = "Merci de votre inscription"
-        paragraph.classList.add('text-label')
-        paragraph.style.textAlign = "center"
-        form.insertAdjacentElement('afterend', paragraph)
-        paragraph.insertAdjacentElement('afterend', input)
-        return true
+        thanks.style.display = "block"
+        form.style.display = "none"
     }
     return false
 }
